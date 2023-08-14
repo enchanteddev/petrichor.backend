@@ -26,7 +26,7 @@ SECRET_KEY = 'guq^ch8ob08nf6al1zo(p**!@xeikuv175)2-f@t54nl_m17^1'
 DEBUG = False
 CORS_ORIGIN_ALLOW_ALL = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -132,7 +132,7 @@ REST_FRAMEWORK = {
 )
 }
 
-
+STATIC_URL = '/static/'
 # EMAIL_USE_TLS = True
 # EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 # EMAIL_HOST_USER = '1d9d1ca368ad0a'
@@ -151,7 +151,10 @@ EMAIL_PORT = 587
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+
+
 if not DEBUG:
+    pass
     print(os.environ['DATABASE_URL'])
     import dj_database_url
     db_from_env = dj_database_url.config(conn_max_age=500)
