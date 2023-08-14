@@ -132,7 +132,7 @@ REST_FRAMEWORK = {
 )
 }
 
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # EMAIL_USE_TLS = True
 # EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 # EMAIL_HOST_USER = '1d9d1ca368ad0a'
