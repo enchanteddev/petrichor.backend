@@ -20,7 +20,7 @@ def home(request):
 def signup(request):
     if request.method == 'POST':
         data = request.data
-        username = data['username']
+        username = data['username'].strip().lower()
         email = data['email']
         pass1 = data['password']
         phone = data['phone']
@@ -94,7 +94,7 @@ def signup(request):
 def user_login(request):
     if request.method == 'POST':
         data = request.data
-        username = data['username']
+        username = data['username'].strip().lower()
         password = data['password']
         my_user = authenticate(username = username, password = password)
         if my_user is not None:
