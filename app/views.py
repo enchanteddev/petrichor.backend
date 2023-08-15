@@ -20,7 +20,7 @@ def home(request):
 def signup(request):
     if request.method == 'POST':
         data = request.data
-        username = data['username'].strip().lower()
+        username = data['username'].strip()
         email = data['email']
         pass1 = data['password']
         phone = data['phone']
@@ -48,7 +48,7 @@ def signup(request):
 
         # Creates a new user and adds it to the profile with a new CA_code
         else:
-            new_user = User.objects.create_user(username, email, pass1)
+            new_user = User.objects.create_user(email, email, pass1)
 
             # Not activating the user unless the confirmation mail is opened
             new_user.is_active = False
@@ -94,12 +94,12 @@ def signup(request):
 def user_login(request):
     if request.method == 'POST':
         data = request.data
-        username = data['username'].strip().lower()
+        username = data['username'].strip()
         password = data['password']
         my_user = authenticate(username = username, password = password)
         if my_user is not None:
             login(request, my_user)
-            profile = Profile.objects.get(username=username)
+            profile = Profile.objects.get(email=username)
             return Response({
                 "ok": "true",
                 "CA": profile.CA,
@@ -137,7 +137,7 @@ def activate(request, uidb64, token):
 
         new_user.is_active = True
         new_user.save()
-        userprof = Profile.objects.get(username=new_user.username)
+        userprof = Profile.objects.get(email=new_user.username)
         userprof.generate_CA()
         # print(userprof.CA)
         userprof.save()
