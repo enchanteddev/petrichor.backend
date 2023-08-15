@@ -28,17 +28,17 @@ def signup(request):
         year = data['year']
         # print(username, email, pass1, pass2)
         # checks for same username
-        if User.objects.filter(username=username).first():
-            return Response(
-                {'status': 404,
-                    "registered": False,
-                    'message': "Username already registered",
-                    "username": username
-                    }
-            )
+        # if User.objects.filter(username=username).first():
+        #     return Response(
+        #         {'status': 404,
+        #             "registered": False,
+        #             'message': "Username already registered",
+        #             "username": username
+        #             }
+        #     )
 
         # checks if the username exists
-        elif User.objects.filter(email=email).first():
+        if User.objects.filter(email=email).first():
             return Response({
                 'status': 404,
                 "registered": False,
