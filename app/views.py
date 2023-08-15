@@ -31,7 +31,7 @@ def signup(request):
         if User.objects.filter(username=username).first():
             return Response(
                 {'status': 404,
-                    "registered": "false",
+                    "registered": False,
                     'message': "Username already registered",
                     "username": username
                     }
@@ -41,7 +41,7 @@ def signup(request):
         elif User.objects.filter(email=email).first():
             return Response({
                 'status': 404,
-                "registered": "false",
+                "registered": False,
                 'message': "Email already registered",
                 "username": username
             })
