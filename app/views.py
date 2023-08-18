@@ -136,7 +136,7 @@ def admin_data(request):
             "status": 500,
             "message": "Password not set at host, Contact someone idk."
         })
-    if password == settings.os.environ["PWD"]:
+    if password == settings.os.environ["password"]:
         return Response({
             'status': 200,
             'data': [
@@ -151,6 +151,7 @@ def admin_data(request):
             ]
         })
     else:
+        print(f"someone tried '{password}' as admin password.")
         return Response({
             'status': 500,
             'message': 'wrong password'
