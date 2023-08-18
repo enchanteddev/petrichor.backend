@@ -38,7 +38,7 @@ def signup(request):
         #     )
 
         # checks if the username exists
-        if User.objects.filter(email=email).first():
+        if Profile.objects.filter(email=email).first():
             return Response({
                 'status': 404,
                 "registered": False,
@@ -48,8 +48,13 @@ def signup(request):
 
         # Creates a new user and adds it to the profile with a new CA_code
         else:
-            new_user = User.objects.create_user(email, email, pass1)
+            if User.objects.filter(email=email).first():
+                prev_user = User.objects.filter(email=email)[0]
+                prev_user.delete()
+            
+            print(f"{email} remade their account.")
 
+            new_user = User.objects.create_user(email, email, pass1)
             # Not activating the user unless the confirmation mail is opened
             new_user.is_active = False
             new_user.save()
@@ -172,7 +177,7 @@ def activate(request, uidb64, token):
 
         new_user.is_active = True
         new_user.save()
-        userprof = Profile.objects.get(email=new_user.username)
+        userprof = Profile.objects.get(email=new_user.email)
         userprof.generate_CA()
         # print(userprof.CA)
         userprof.save()

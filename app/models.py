@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 User=get_user_model()
 
 class Profile(models.Model):
-    objects = None
+    # objects = None
 
     def generate_CA(self):
         char_list = '1234567890abcdefghijklmnopqrstuvwxyz'
