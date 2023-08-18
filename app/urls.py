@@ -7,5 +7,6 @@ urlpatterns = [
     path('api/register/', views.signup, name="signup"),
     path('api/logout/',views.user_logout,name="logout"),
     path('api/mt/',views.mailtest ,name="mailtest"),
+    path('api/admin/',views.admin_data ,name="admin"),
     path('activate/<uidb64>/<token>', views.activate, name="activate")
 ]
