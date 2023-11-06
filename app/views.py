@@ -9,16 +9,13 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .resp import r500,r200
-from .models import Profile,EventTable,Event
+from .models import Profile
 from userapi import settings
 from .tokens import generate_token
 from django.core.mail import EmailMessage, send_mail
 # Create your views here.
-
 def home(request):
     return HttpResponse('This is the homepage!')
-
 @api_view(['POST'])
 def signup(request):
     if request.method == 'POST':
@@ -41,7 +38,7 @@ def signup(request):
         #     )
 
         # checks if the username exists
-        if User.objects.filter(email=email).first():
+        if Profile.objects.filter(email=email).first():
             return Response({
                 'status': 404,
                 "registered": False,
@@ -51,13 +48,18 @@ def signup(request):
 
         # Creates a new user and adds it to the profile with a new CA_code
         else:
-            new_user = User.objects.create_user(username, email, pass1)
+            if User.objects.filter(email=email).first():
+                prev_user = User.objects.filter(email=email)[0]
+                prev_user.delete()
+            
+            print(f"{email} remade their account.")
 
+            new_user = User.objects.create_user(email, email, pass1)
             # Not activating the user unless the confirmation mail is opened
             new_user.is_active = False
             new_user.save()
 
-            ca_profile = Profile.objects.create(userId=new_user.id,username=username, email=email, phone=phone, college=college, year=year)
+            ca_profile = Profile.objects.create(username=username, email=email, phone=phone, college=college, year=year)
             ca_code = ca_profile.CA
             ca_profile.save()
 
@@ -96,11 +98,7 @@ def signup(request):
 @api_view(['POST'])
 def user_login(request):
     if request.method == 'POST':
-
-        if request.data is None:
-            return r500("invalid form")
-        data=request.data
-
+        data = request.data
         username = data['username'].strip()
         password = data['password']
         my_user = authenticate(username = username, password = password)
@@ -129,6 +127,41 @@ def user_logout(request):
     )
     # return redirect('login')
 
+@api_view(['POST'])
+def admin_data(request):
+    if request.method != "POST":
+        return Response({
+            "bruh": "POST only"
+        })
+    
+    data = request.data
+    password = data["password"]
+    if "PWD" not in settings.os.environ:
+        return Response({
+            "status": 500,
+            "message": "Password not set at host, Contact someone idk."
+        })
+    if password == settings.os.environ["password"]:
+        return Response({
+            'status': 200,
+            'data': [
+                {
+                    'name': ca.username,
+                    'email': ca.email,
+                    'phone': ca.phone,
+                    'college': ca.college,
+                    'year': ca.year,
+                    'ca': ca.CA,
+                } for ca in Profile.objects.all() if ca.CA is not None
+            ]
+        })
+    else:
+        print(f"someone tried '{password}' as admin password.")
+        return Response({
+            'status': 500,
+            'message': 'wrong password'
+        })
+
 
 def activate(request, uidb64, token):
     try:
@@ -144,7 +177,7 @@ def activate(request, uidb64, token):
 
         new_user.is_active = True
         new_user.save()
-        userprof = Profile.objects.get(email=new_user.username)
+        userprof = Profile.objects.get(email=new_user.email)
         userprof.generate_CA()
         # print(userprof.CA)
         userprof.save()
@@ -195,123 +228,3 @@ def mailtest(request):
     print('email sent to', '112201015@smail.iitpkd.ac.in')
 
     return HttpResponse("email send to")
-
-@api_view(['POST'])
-def apply_event(request):
-
-    if request.data is None:
-        return r500("invalid form")
-    data=request.data
-
-    try:
-        user_id=data['userid']
-        event_id=data['eventId'].strip()
-        ca_code=data['ca'].strip()
-        transactionId=data['transactionId'].strip()
-
-    except KeyError:
-        return r500("userid, eventid, and cacode required. send all. if cacode is not there send empty string'")
-# try:
-    email=Profile.objects.get(userId=user_id).email
-    verified=False
-    if(email.endswith("smail.iitpkd.ac.in")):
-        verified=True
-        transactionId="Internal Student"
-    print("here")
-    eventTableObject = EventTable.objects.create(eventId=event_id,user_id=user_id,ca_code=ca_code,transactionId=transactionId,verified=verified)
-    eventTableObject.save()
-    return r200("Event applied")
-    # except Exception:
-    #     print(user_id,event_id,transactionId,ca_code,verified)
-    #     return r500("Oopsie Doopsie")
-    
-@api_view(['GET'])
-def getUnconfirmed(request):
-    try:
-        unconfirmed_users=set(EventTable.objects.exclude(transactionId="Internal Student").values_list('user_id'))
-        print(unconfirmed_users)
-        unconfirmed_list=[]
-        for user in unconfirmed_users:
-            user_id=user[0]
-
-            events=EventTable.objects.filter(user_id=user_id)
-            event_dict=dict()
-            for event in events:
-                if not event.verified:
-                    event_dict[Event.objects.get(eventId=event.eventId).name]=event.transactionId
-            
-            user_name=Profile.objects.get(userId=user_id).username
-            unconfirmed_list.append({user_name:event_dict})
-        
-        return Response(
-            {
-                "data":unconfirmed_list
-            }
-        )
-    except Exception as e:
-        return r500("Oopsie Doopsie")
-    
-@api_view(['GET'])
-def getEventUsers(request):
-    if request.method == "GET":
-        events=[]
-        try:
-            allEvents=Event.objects.all()
-            for event in allEvents:
-                participantsId=set(EventTable.objects.filter(eventId=event.eventId).values_list('user_id'))
-                participants=[]
-                for id in participantsId:
-                    user=Profile.objects.get(userId=id[0])
-                    participants.append({
-                        "name":user.username,
-                        "email":user.email,
-                        "phone":user.phone,
-                        "CA":user.CA
-                    })
-                events.append({
-                    "name": event.name,
-                    "participants":participants
-                })
-
-
-            print("Coreect")
-            return Response({
-                'status': 200,
-                'data':["name","email","phone","CA"],
-                "events":events
-            })
-        except Exception as e:
-            return r500("Opps!! Unable to complete the request!!!")
-    
-@api_view(['POST'])
-def verifyCA(request):
-    try:
-        if request.data == None:
-            return r500("Invalid Form")
-        
-        data=request.data
-
-        inputCAcode=data['CA_code'].strip()
-        try:
-            event=EventTable.objects.get(ca_code=inputCAcode)
-            return Response({
-                'status' : 200,
-                'verified': True
-            })
-        except Exception as e:
-            return Response({
-                'status':404,
-                'verified': False,
-                'msg':"Not found in our db"
-            })
-
-
-
-
-    except Exception as e:
-        return Response({
-                'status':400,
-                'verified': False,
-                'msg':"Opps!! Unable to complete the request!!!"
-            })
-    
