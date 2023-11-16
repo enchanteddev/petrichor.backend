@@ -128,7 +128,40 @@ def user_logout(request):
         }
     )
     # return redirect('login')
-
+@api_view(['POST'])
+def admin_data(request):
+    if request.method != "POST":
+        return Response({
+            "bruh": "POST only"
+        })
+    
+    data = request.data
+    password = data["password"]
+    if "PWD" not in settings.os.environ:
+        return Response({
+            "status": 500,
+            "message": "Password not set at host, Contact someone idk."
+        })
+    if password == settings.os.environ["password"]:
+        return Response({
+            'status': 200,
+            'data': [
+                {
+                    'name': ca.username,
+                    'email': ca.email,
+                    'phone': ca.phone,
+                    'college': ca.college,
+                    'year': ca.year,
+                    'ca': ca.CA,
+                } for ca in Profile.objects.all() if ca.CA is not None
+            ]
+        })
+    else:
+        print(f"someone tried '{password}' as admin password.")
+        return Response({
+            'status': 500,
+            'message': 'wrong password'
+        })
 
 def activate(request, uidb64, token):
     try:

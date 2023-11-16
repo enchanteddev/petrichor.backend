@@ -7,6 +7,7 @@ urlpatterns = [
     path('api/register/', views.signup, name="signup"),
     path('api/logout/',views.user_logout,name="logout"),
     path('api/mt/',views.mailtest ,name="mailtest"),
+    path('api/admin/',views.admin_data ,name="admin"),
     path('api/events/apply',views.apply_event ,name="applyEvent"),
     path('api/events/',views.getEventUsers ,name="event"),
     path('api/events/verify',views.verifyCA,name="verifyCA"),
