@@ -13,7 +13,7 @@ class Profile(models.Model):
         char_list = '1234567890abcdefghijklmnopqrstuvwxyz'
         self.CA = ''.join(random.choice(char_list) for _ in range(6))
     userId=models.IntegerField()
-    username = models.CharField(max_length=13)
+    username = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=13)
     college = models.CharField(max_length=100, null=True)
