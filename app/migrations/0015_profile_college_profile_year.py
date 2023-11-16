@@ -10,14 +10,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='profile',
-            name='college',
-            field=models.CharField(max_length=100, null=True),
-        ),
-        migrations.AddField(
-            model_name='profile',
-            name='year',
-            field=models.CharField(max_length=5, null=True),
-        ),
     ]
