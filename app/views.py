@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User, auth
+from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.http import HttpResponse
@@ -9,6 +9,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.request import Request, Empty
 from .resp import r500,r200
 from .models import Profile,EventTable,Event
 from userapi import settings
@@ -383,3 +384,32 @@ def verifyTR(request):
                 'msg':"Opps!! Unable to complete the request!!!"
             })
     
+
+@api_view(['POST'])
+def send_grievance(request: Request):
+    try:
+        data = request.data
+        if isinstance(data, Empty) or data is None:
+            return r500("Invalid Form")
+        
+        name = data['name'] # type: ignore
+        email = data['email'] # type: ignore
+        content = data['content'] # type: ignore
+
+        send_mail(
+            subject=f"Grievance from {name}",
+            message=f"From {name} ({email}).\n\n{content}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=["112201015@smail.iitpkd.ac.in"]
+        )
+        print("grievance email sent")
+        return Response({
+                'status':200,
+                'success': True
+            })
+
+    except Exception as e:
+        return Response({
+                'status':400,
+                'success': False
+            })
