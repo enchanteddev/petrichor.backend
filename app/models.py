@@ -15,9 +15,9 @@ class Profile(models.Model):
     userId=models.IntegerField()
     username = models.CharField(max_length=100)
     email = models.EmailField()
-    phone = models.CharField(max_length=13)
+    phone = models.CharField(max_length=20)
     college = models.CharField(max_length=100, null=True)
-    year = models.CharField(max_length=5, null=True)
+    year = models.CharField(max_length=25, null=True)
     CA = models.TextField(null=True)
 
     def __str__(self):

@@ -14,15 +14,5 @@ class Migration(migrations.Migration):
             model_name='profile',
             name='college',
             field=models.CharField(max_length=100, null=True),
-        ),
-        migrations.AlterField(
-            model_name='profile',
-            name='username',
-            field=models.CharField(max_length=13),
-        ),
-        migrations.AlterField(
-            model_name='profile',
-            name='year',
-            field=models.CharField(max_length=5, null=True),
-        ),
+        )
     ]
