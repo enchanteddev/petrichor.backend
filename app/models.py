@@ -12,7 +12,7 @@ class Profile(models.Model):
     def generate_CA(self):
         char_list = '1234567890abcdefghijklmnopqrstuvwxyz'
         self.CA = ''.join(random.choice(char_list) for _ in range(6))
-    userId=models.IntegerField()
+    # userId=models.IntegerField()
     username = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
