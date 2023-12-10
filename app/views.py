@@ -10,8 +10,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request, Empty
-from .resp import r500,r200
-from .models import Profile,EventTable,Event
+from .resp import r500, r200
+from .models import *
 from userapi import settings
 from .tokens import generate_token
 from django.core.mail import EmailMessage, send_mail
@@ -30,6 +30,8 @@ def signup(request):
         phone = data['phone']
         college = data['college']
         year = data['year']
+        instituteID = data['instituteID']
+        stream = data['stream']
         # print(username, email, pass1, pass2)
         # checks for same username
         # if User.objects.filter(username=username).first():
@@ -58,11 +60,17 @@ def signup(request):
             new_user.is_active = False
             new_user.save()
 
-            ca_profile = Profile.objects.create(userId=new_user.id,username=username, email=email, phone=phone, college=college, year=year)
+            institutee = Institute.objects.get_or_create(instiName=instituteID)
+            institute = Institute.objects.get(instiName=instituteID)
+
+            print(institute.pk)
+
+
+            ca_profile = Profile.objects.create(userId=new_user.id,username=username, email=email, phone=phone, instituteID=institute.pk, joinYear=year)
             ca_code = ca_profile.CA
             ca_profile.save()
 
-            # Confimation link mail
+            # Confirmation link mail
             current_site = get_current_site(request)
             email_subject = "Petrichor Fest - Campus Ambassador Programme Confirmation"
             confirmation_message = render_to_string('confirmation_email.html',
@@ -84,15 +92,13 @@ def signup(request):
             print("mail sent to", new_user.email)
 
             # Sending Email with CA code
-
-
-
             return Response({
                 'status': 200,
                 "registered": "true",
                 'message': "Success",
                 "username": username
             })
+
 
 @api_view(['POST'])
 def user_login(request):
