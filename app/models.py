@@ -6,6 +6,14 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 User=get_user_model()
 
+
+class Institute(models.Model):
+    institutionType = models.CharField(max_length=255, null=True)
+    instiName = models.CharField(unique=True, max_length=255)
+    def __str__(self):
+        return self.instiName
+
+
 class Profile(models.Model):
     # objects = None
 
@@ -15,10 +23,13 @@ class Profile(models.Model):
     userId=models.IntegerField()
     username = models.CharField(max_length=100)
     email = models.EmailField()
-    phone = models.CharField(max_length=20)
-    college = models.CharField(max_length=100, null=True)
-    year = models.CharField(max_length=25, null=True)
+    phone = models.CharField(max_length=13)
     CA = models.TextField(null=True)
+    instituteID = models.CharField(null=True, max_length=255)
+    joinYear = models.CharField(max_length=5, null=True)
+    gradYear = models.IntegerField(null=True)
+    stream = models.CharField(null=True, max_length=10)
+
 
     def __str__(self):
         return self.username
