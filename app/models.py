@@ -17,14 +17,10 @@ class Institute(models.Model):
 class Profile(models.Model):
     # objects = None
 
-    def generate_CA(self):
-        char_list = '1234567890abcdefghijklmnopqrstuvwxyz'
-        self.CA = ''.join(random.choice(char_list) for _ in range(6))
     # userId=models.IntegerField()
     username = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=13)
-    CA = models.TextField(null=True)
     instituteID = models.CharField(null=True, max_length=255)
     joinYear = models.CharField(max_length=5, null=True)
     gradYear = models.IntegerField(null=True)
@@ -43,7 +39,6 @@ class Event(models.Model):
 class EventTable(models.Model):
     eventId=models.CharField(max_length=10,null=True)
     user_id=models.IntegerField()
-    ca_code=models.CharField(max_length=10)
     transactionId=models.CharField(max_length=25)
     verified=models.BooleanField()
 
