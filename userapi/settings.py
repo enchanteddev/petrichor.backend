@@ -74,6 +74,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'userapi.wsgi.application'
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # or 'django.contrib.sessions.backends.cache'
+SESSION_COOKIE_SECURE = DEBUG  # Set to True if using HTTPS
+
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases

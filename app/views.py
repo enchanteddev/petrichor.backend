@@ -1,5 +1,6 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.http import HttpResponse
@@ -28,9 +29,9 @@ def signup(request):
         email = data['email']
         pass1 = data['password']
         phone = data['phone']
-        college = data['college']
-        year = data['year']
-        instituteID = data['instituteID']
+        insti_name = data['college']
+        gradyear = data['gradyear']
+        insti_type = data['institype']
         stream = data['stream']
         # print(username, email, pass1, pass2)
         # checks for same username
@@ -60,40 +61,45 @@ def signup(request):
             new_user.is_active = False
             new_user.save()
 
-            institutee = Institute.objects.get_or_create(instiName=instituteID)
-            institute = Institute.objects.get(instiName=instituteID)
+            institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
+            # institute = Institute.objects.get(instiName=instituteID)
 
             print(institute.pk)
 
 
-            user_profile = Profile.objects.create(userId=new_user.id,username=username, email=email, phone=phone, instituteID=institute.pk, joinYear=year)
+            user_profile = Profile.objects.create(username=username, 
+                                                  email=email,
+                                                  phone=phone,
+                                                  instituteID=institute.pk,
+                                                  gradYear=gradyear,
+                                                  stream=stream)
             user_profile.save()
 
             # Confirmation link mail
-            current_site = get_current_site(request)
-            email_subject = "Petrichor Registration Confirmation"
-            confirmation_message = render_to_string('confirmation_email.html',
-                                                    {
-                                                        'username': username,
-                                                        'domain': current_site.domain,
-                                                        'uid': urlsafe_base64_encode(force_bytes(new_user.pk)),
-                                                        'token': generate_token.make_token(new_user)
-                                                    })   # add a html template
-            email_cnf = EmailMessage(
-                email_subject,
-                confirmation_message,
-                settings.EMAIL_HOST_USER,
-                [new_user.email],
-            )
-            email_cnf.fail_silently = False
-            print(settings.EMAIL_BACKEND, "a")
-            email_cnf.send()
-            print("mail sent to", new_user.email)
+            # current_site = get_current_site(request)
+            # email_subject = "Petrichor Registration Confirmation"
+            # confirmation_message = render_to_string('confirmation_email.html',
+            #                                         {
+            #                                             'username': username,
+            #                                             'domain': current_site.domain,
+            #                                             'uid': urlsafe_base64_encode(force_bytes(new_user.pk)),
+            #                                             'token': generate_token.make_token(new_user)
+            #                                         })   # add a html template
+            # email_cnf = EmailMessage(
+            #     email_subject,
+            #     confirmation_message,
+            #     settings.EMAIL_HOST_USER,
+            #     [new_user.email],
+            # )
+            # email_cnf.fail_silently = False
+            # print(settings.EMAIL_BACKEND, "a")
+            # email_cnf.send()
+            # print("mail sent to", new_user.email)
 
-            # Sending Email 
+            # # Sending Email 
             return Response({
                 'status': 200,
-                "registered": "true",
+                "registered": True,
                 'message': "Success",
                 "username": username
             })
@@ -114,7 +120,7 @@ def user_login(request):
             login(request, my_user)
             profile = Profile.objects.get(email=username)
             return Response({
-                "ok": "true",
+                "ok": True,
                 "username": profile.username,
                 "registrations": 0
             })
@@ -159,17 +165,29 @@ def mailtest(request):
 
     return HttpResponse("email send to")
 
-@api_view(['POST'])
-def apply_event(request):
+def get_user_from_session(request):
+    user = get_user(request)    
+    if user and user.is_authenticated:
+        return user
+    else:
+        return None
 
-    if request.data is None:
-        return r500("invalid form")
+
+@login_required
+@api_view(['POST'])
+def apply_event(request: Request):
+
     data=request.data
+    if data is None:
+        return r500("invalid form")
     print(data,"Apply_Event")
     try:
-        user_id=data['userid']
-        event_id=data['eventId'].strip()
-        transactionId=data['transactionId'].strip()
+        user=get_user_from_session(request)
+        if user is None:
+            return r500('login')
+        user_id = Profile.objects.get(email=user.username).userId # type: ignore
+        event_id=data['eventId'].strip() # type: ignore
+        transactionId=data['transactionId'].strip() # type: ignore
 
     except KeyError:
         return r500("userid, eventid and transactionId required. send all.'")
