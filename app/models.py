@@ -35,9 +35,16 @@ class Event(models.Model):
     name=models.CharField(max_length=20,default="")
     about=models.CharField(max_length=300)
 
+
+sep = '\n'
 class EventTable(models.Model):
     eventId=models.CharField(max_length=10,null=True)
-    user_id=models.IntegerField()
+    emails = models.TextField()
     transactionId=models.CharField(max_length=25, primary_key=True)
     verified=models.BooleanField()
 
+    def add_emails(self, emails: list[str]):
+        return sep.join(emails)
+    
+    def get_emails(self) -> list[str]:
+        return self.emails.split(sep)
