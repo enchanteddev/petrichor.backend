@@ -1,21 +1,15 @@
 from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request, Empty
 from .resp import r500, r200
 from .models import *
 from userapi import settings
-from .tokens import generate_token
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import send_mail
 # Create your views here.
 
 def home(request):
@@ -33,18 +27,7 @@ def signup(request):
         gradyear = data['gradyear']
         insti_type = data['institype']
         stream = data['stream']
-        # print(username, email, pass1, pass2)
-        # checks for same username
-        # if User.objects.filter(username=username).first():
-        #     return Response(
-        #         {'status': 404,
-        #             "registered": False,
-        #             'message': "Username already registered",
-        #             "username": username
-        #             }
-        #     )
-
-        # checks if the username exists
+        
         if User.objects.filter(email=email).first():
             return Response({
                 'status': 404,
@@ -53,7 +36,7 @@ def signup(request):
                 "username": username
             })
 
-        # Creates a new user and adds it to the profile 
+
         else:
             new_user = User(username=email)
             new_user.set_password(pass1)
@@ -75,28 +58,6 @@ def signup(request):
                                                   stream=stream)
             user_profile.save()
 
-            # Confirmation link mail
-            # current_site = get_current_site(request)
-            # email_subject = "Petrichor Registration Confirmation"
-            # confirmation_message = render_to_string('confirmation_email.html',
-            #                                         {
-            #                                             'username': username,
-            #                                             'domain': current_site.domain,
-            #                                             'uid': urlsafe_base64_encode(force_bytes(new_user.pk)),
-            #                                             'token': generate_token.make_token(new_user)
-            #                                         })   # add a html template
-            # email_cnf = EmailMessage(
-            #     email_subject,
-            #     confirmation_message,
-            #     settings.EMAIL_HOST_USER,
-            #     [new_user.email],
-            # )
-            # email_cnf.fail_silently = False
-            # print(settings.EMAIL_BACKEND, "a")
-            # email_cnf.send()
-            # print("mail sent to", new_user.email)
-
-            # # Sending Email 
             return Response({
                 'status': 200,
                 "registered": True,
@@ -142,30 +103,6 @@ def user_logout(request):
     )
     # return redirect('login')
 
-
-def mailtest(request):
-    current_site = get_current_site(request)
-    email_subject = "Petrichor Registration Confirmation"
-    confirmation_message = render_to_string('confirmation_email.html',
-                                            {
-                                                'username': 'hello',
-                                                'domain': current_site.domain,
-                                                'uid': "urlsafe_base64_encode(force_bytes('new_user.pk'))",
-                                                'token': "generate_token.make_token('new_user')"
-                                            })   # add a html template
-    email_cnf = EmailMessage(
-        email_subject,
-        confirmation_message,
-        settings.EMAIL_HOST_USER,
-        ['112201015@smail.iitpkd.ac.in'],
-    )
-    print(email_cnf)
-    email_cnf.fail_silently = False
-    # print(settings.EMAIL_BACKEND, "a")
-    email_cnf.send()
-    print('email sent to', '112201015@smail.iitpkd.ac.in')
-
-    return HttpResponse("email send to")
 
 def get_user_from_session(request):
     user = get_user(request)    
