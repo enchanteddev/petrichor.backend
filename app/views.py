@@ -55,11 +55,11 @@ def signup(request):
 
         # Creates a new user and adds it to the profile 
         else:
-            new_user = User.objects.create_user(username, email, pass1)
-
-            # Not activating the user unless the confirmation mail is opened
-            new_user.is_active = False
+            new_user = User(username=email)
+            new_user.set_password(pass1)
+            new_user.is_active = True
             new_user.save()
+            
 
             institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
             # institute = Institute.objects.get(instiName=instituteID)
@@ -114,7 +114,9 @@ def user_login(request):
         data=request.data
 
         username = data['username'].strip()
+        print(username)
         password = data['password']
+        print(password)
         my_user = authenticate(username = username, password = password)
         if my_user is not None:
             login(request, my_user)
@@ -172,6 +174,11 @@ def get_user_from_session(request):
     else:
         return None
 
+@api_view(['POST'])
+def whoami(request: Request):
+    return Response({
+        'whoami': get_user_from_session(request)
+    })
 
 @login_required
 @api_view(['POST'])
