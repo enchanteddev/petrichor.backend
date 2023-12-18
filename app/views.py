@@ -176,8 +176,9 @@ def get_user_from_session(request):
 
 @api_view(['POST'])
 def whoami(request: Request):
+    user = get_user_from_session(request)
     return Response({
-        'whoami': get_user_from_session(request)
+        'whoami': user.username if user else None  # type: ignore
     })
 
 @login_required
