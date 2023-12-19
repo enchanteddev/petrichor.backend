@@ -1,5 +1,3 @@
-import random
-
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -33,7 +31,7 @@ class Profile(models.Model):
 class Event(models.Model):
     eventId=models.CharField(max_length=10,default="", primary_key=True)
     name=models.CharField(max_length=20,default="")
-    about=models.CharField(max_length=300)
+    fee = models.IntegerField(default=0)
 
 
 sep = '\n'
@@ -43,7 +41,8 @@ class EventTable(models.Model):
     transactionId=models.CharField(max_length=25, primary_key=True)
     verified=models.BooleanField()
 
-    def add_emails(self, emails: list[str]):
+    @staticmethod
+    def serialise_emails(emails: list[str]):
         return sep.join(emails)
     
     def get_emails(self) -> list[str]:
