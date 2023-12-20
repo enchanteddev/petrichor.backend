@@ -103,6 +103,30 @@ def user_logout(request):
     )
     # return redirect('login')
 
+def getUserInfo(request):
+    user = get_user_from_session(request)
+    if user:
+        profileUser=Profile.objects.get(email=user.email)
+        if profileUser:
+            response={
+                "username":profileUser.username,
+                "email":profileUser.email,
+                "phone":profileUser.phone,
+                "instituteID":profileUser.instituteID,
+                "gradyear":profileUser.gradYear,
+                "stream":profileUser.stream
+            }
+            events=EventTable.objects.filter(user_email=user.email).values_list('')
+            return Response({
+                "status":200,
+                "response":response
+                })
+    else:
+        return Response({
+            "status":404,
+            "response":"null"
+        })
+
 
 def get_user_from_session(request):
     user = get_user(request)    
