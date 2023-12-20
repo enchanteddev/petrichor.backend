@@ -82,11 +82,13 @@ def user_login(request):
         if my_user is not None:
             login(request, my_user)
             profile = Profile.objects.get(email=username)
+            print("OK")
             return Response({
                 "ok": True,
                 "username": profile.username,
                 "registrations": 0
             })
+        print("Failed")
         return Response({
             "message": "The username or password is incorrect",
             "logged-in": "false"
@@ -103,10 +105,12 @@ def user_logout(request):
     )
     # return redirect('login')
 
+@api_view(['POST'])
 def getUserInfo(request):
     user = get_user_from_session(request)
     if user:
-        profileUser=Profile.objects.get(email=user.email)
+        print("Passed",user,"p")
+        profileUser=Profile.objects.get(email=user)
         if profileUser:
             response={
                 "username":profileUser.username,
@@ -115,16 +119,22 @@ def getUserInfo(request):
                 "instituteID":profileUser.instituteID,
                 "gradyear":profileUser.gradYear,
                 "stream":profileUser.stream
-            }
-            events=EventTable.objects.filter(user_email=user.email).values_list('')
+            } 
+            events=[]
+            eventEntries=EventTable.objects.all()
+            for eventEntry in eventEntries:
+                if str(user) in eventEntry.emails:
+                    events.append(eventEntry.eventId)
+            response["events"]=events
             return Response({
                 "status":200,
                 "response":response
                 })
     else:
+        print("Auth failed")
         return Response({
             "status":404,
-            "response":"null"
+            "response":None
         })
 
 

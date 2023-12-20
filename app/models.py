@@ -37,7 +37,7 @@ class Event(models.Model):
 sep = '\n'
 class EventTable(models.Model):
     eventId=models.CharField(max_length=10,null=True)
-    emails = models.TextField()
+    emails = models.TextField(default="")
     transactionId=models.CharField(max_length=25, primary_key=True)
     verified=models.BooleanField()
 

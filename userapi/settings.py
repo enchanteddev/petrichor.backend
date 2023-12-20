@@ -25,8 +25,17 @@ SECRET_KEY = 'guq^ch8ob08nf6al1zo(p**!@xeikuv175)2-f@t54nl_m17^1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = True
+CSRF_COOKIE_SECURE = True
 
-ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173'
+]
+ALLOWED_HOSTS = [
+    'localhost','127.0.0.1'
+]
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:5173',
+]
 
 
 # Application definition
