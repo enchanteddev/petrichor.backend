@@ -142,39 +142,87 @@ def whoami(request: Request):
         'whoami': user.username if user else None  # type: ignore
     })
 
+
 @login_required
 @api_view(['POST'])
-def apply_event(request: Request):
-
+def apply_event_paid(request: Request):
     data=request.data
     if data is None:
         return r500("invalid form")
-    print(data,"Apply_Event")
     try:
         user=get_user_from_session(request)
         if user is None:
             return r500('login')
-        user_id = Profile.objects.get(email=user.username).userId # type: ignore
-        event_id=data['eventId'].strip() # type: ignore
-        transactionId=data['transactionId'].strip() # type: ignore
+        user_email = user.username # type: ignore
+        participants = data['participants'] # type: ignore
+        event_id = data['eventID'].strip() # type: ignore
+        transactionId = data['transactionId'].strip() # type: ignore
 
     except KeyError:
-        return r500("userid, eventid and transactionId required. send all.'")
+        return r500("participants, eventid and transactionId required. send all.'")
 # try:
-    email=Profile.objects.get(userId=user_id).email
     verified=False
-    if(email.endswith("smail.iitpkd.ac.in")):
+    if user_email.endswith("smail.iitpkd.ac.in"):
         verified=True
-        transactionId="Internal Student"
-    print("here")
-    eventTableObject = EventTable.objects.create(eventId=event_id,user_id=user_id,transactionId=transactionId,verified=verified)
+        transactionId="IIT Palakkad Student"
+        
+    eventTableObject = EventTable.objects.create(eventId=event_id,
+                                                 emails=EventTable.serialise_emails(participants), #type: ignore
+                                                 transactionId=transactionId,verified=verified)
     eventTableObject.save()
     return r200("Event applied")
     # except Exception:
     #     print(user_id,event_id,transactionId,verified)
     #     return r500("Oopsie Doopsie")
+
+
+@login_required
+@api_view(['POST'])
+def apply_event_free(request):
+    data=request.data
+    if data is None:
+        return r500("invalid form")
+    try:
+        user=get_user_from_session(request)
+        if user is None:
+            return r500('login')
+        user_email = user.username # type: ignore
+        participants = data['participants'] # type: ignore
+        event_id = data['eventId'].strip() # type: ignore
+
+    except KeyError:
+        return r500("participants and eventid required. send both.'")
+
+    transactionId = None
+    if user_email.endswith("smail.iitpkd.ac.in"):
+        transactionId="IIT Palakkad Student"
+        
+    eventTableObject = EventTable.objects.create(eventId=event_id,
+                                                 emails=EventTable.serialise_emails(participants), #type: ignore
+                                                 transactionId=transactionId, verified=True)
+    eventTableObject.save()
+    return r200("Event applied")
+
+
+@login_required # limits the calls to this function ig
+@api_view(['POST'])
+def get_event_data(request):
+    data=request.data
+    if data is None:
+        return r500("invalid form")
+    try:
+        event_id = data["eventID"]
+    except KeyError:
+        return r500("Send an eventID")
     
-    
+    event = Event.objects.filter(eventId = event_id).first()
+    if event is None:
+        return r500(f"Invalid Event ID = {event_id}")
+    return Response({
+        "name": event.name,
+        "fee": event.fee,
+    })
+
 
 @api_view(['POST'])
 def send_grievance(request: Request):
@@ -188,10 +236,10 @@ def send_grievance(request: Request):
         content = data['content'] # type: ignore
 
         send_mail(
-            subject=f"Grievance from {name}",
+            subject=f"WEBSITE MAIL: Grievance from '{name}'",
             message=f"From {name} ({email}).\n\n{content}",
             from_email=settings.EMAIL_HOST_USER,
-            recipient_list=["112201015@smail.iitpkd.ac.in"]
+            recipient_list=["112201015@smail.iitpkd.ac.in", "petrichor@iitpkd.ac.in"]
         )
         print("grievance email sent")
         return Response({
