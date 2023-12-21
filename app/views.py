@@ -83,6 +83,9 @@ def user_login(request):
             login(request, my_user)
             profile = Profile.objects.get(email=username)
             print("OK")
+            request.session.set_test_cookie()
+            num_visits = request.session.get( 'num_visits', 0)
+            request.session ['num_visits'] = num_visits + 1
             return Response({
                 "ok": True,
                 "username": profile.username,
@@ -124,7 +127,7 @@ def getUserInfo(request):
             eventEntries=EventTable.objects.all()
             for eventEntry in eventEntries:
                 if str(user) in eventEntry.emails:
-                    events.append(eventEntry.eventId)
+                    events.append({"eventId":eventEntry.eventId,"status":eventEntry.verified})
             response["events"]=events
             return Response({
                 "status":200,
@@ -132,6 +135,20 @@ def getUserInfo(request):
                 })
     else:
         print("Auth failed")
+        return Response({
+            "status":200,
+            "response":{
+                "username":"alonot",
+                "email":"csk1@gmail.com",
+                "phone":"1221211221",
+                "instituteID":"11222",
+                "college":"IIT PKD",
+                "gradyear":2029,
+                "stream":"Science",
+                "events":[{"eventId":"TP00","status":"Payment Verified"},
+                          {"eventId":"WP02","status":"Payment Pending"}]
+            }
+        })
         return Response({
             "status":404,
             "response":None

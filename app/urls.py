@@ -6,6 +6,7 @@ urlpatterns = [
     path('register/', views.signup, name="signup"),
     path('logout/',views.user_logout,name="logout"),
     path('user/',views.getUserInfo,name="userInfo"),
+    path('event/',views.get_event_data,name="getEvent"),
     path('whoami/',views.whoami,name="whoami"),
     path('events/apply',views.apply_event_paid ,name="applyEvent"),
     path('send_grievance',views.send_grievance,name="send_grievance")
