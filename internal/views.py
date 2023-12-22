@@ -74,6 +74,7 @@ def verifyTR(request):
         inputTRId=data['TransactionId'].strip()
         try:
             event=EventTable.objects.get(transactionId=inputTRId)
+            event.verified = True
             return Response({
                 'status' : 200,
                 'verified': True
