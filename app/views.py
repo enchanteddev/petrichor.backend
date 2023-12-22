@@ -82,11 +82,16 @@ def user_login(request):
         if my_user is not None:
             login(request, my_user)
             profile = Profile.objects.get(email=username)
+            print("OK")
+            request.session.set_test_cookie()
+            num_visits = request.session.get( 'num_visits', 0)
+            request.session ['num_visits'] = num_visits + 1
             return Response({
                 "ok": True,
                 "username": profile.username,
                 "registrations": 0
             })
+        print("Failed")
         return Response({
             "message": "The username or password is incorrect",
             "logged-in": "false"
@@ -103,6 +108,52 @@ def user_logout(request):
     )
     # return redirect('login')
 
+@api_view(['POST'])
+def getUserInfo(request):
+    user = get_user_from_session(request)
+    if user:
+        print("Passed",user,"p")
+        profileUser=Profile.objects.get(email=user)
+        if profileUser:
+            response={
+                "username":profileUser.username,
+                "email":profileUser.email,
+                "phone":profileUser.phone,
+                "instituteID":profileUser.instituteID,
+                "gradyear":profileUser.gradYear,
+                "stream":profileUser.stream
+            } 
+            events=[]
+            eventEntries=EventTable.objects.all()
+            for eventEntry in eventEntries:
+                if str(user) in eventEntry.emails:
+                    events.append({"eventId":eventEntry.eventId,"status":eventEntry.verified})
+            response["events"]=events
+            return Response({
+                "status":200,
+                "response":response
+                })
+    else:
+        print("Auth failed")
+        return Response({
+            "status":200,
+            "response":{
+                "username":"alonot",
+                "email":"csk1@gmail.com",
+                "phone":"1221211221",
+                "instituteID":"11222",
+                "college":"IIT PKD",
+                "gradyear":2029,
+                "stream":"Science",
+                "events":[{"eventId":"TP00","status":"Payment Verified"},
+                          {"eventId":"WP02","status":"Payment Pending"}]
+            }
+        })
+        return Response({
+            "status":404,
+            "response":None
+        })
+
 
 def get_user_from_session(request):
     user = get_user(request)    
@@ -114,8 +165,18 @@ def get_user_from_session(request):
 @api_view(['POST'])
 def whoami(request: Request):
     user = get_user_from_session(request)
+    events=[]
+    if user is not None:
+        eventEntries=EventTable.objects.all()
+        for eventEntry in eventEntries:
+            if str(user) in eventEntry.emails:
+                events.append(eventEntry.eventId)
+    else:
+        events=["TF01"]
     return Response({
-        'whoami': user.username if user else None  # type: ignore
+        'user': str(user) if user else "csk1@gmail.com" , # type: ignore
+        # 'user': str(user) if user else None , # type: ignore
+        'events': events
     })
 
 
@@ -152,47 +213,57 @@ def apply_event_paid(request: Request):
     #     return r500("Oopsie Doopsie")
 
 
-@login_required
+# @login_required
 @api_view(['POST'])
 def apply_event_free(request):
     data=request.data
+    print(data)
     if data is None:
         return r500("invalid form")
     try:
-        user=get_user_from_session(request)
-        if user is None:
-            return r500('login')
-        user_email = user.username # type: ignore
+        # user=get_user_from_session(request)
+        # if user is None:
+        #     return r500('login')
+        # user_email = user.username # type: ignore
         participants = data['participants'] # type: ignore
         event_id = data['eventId'].strip() # type: ignore
 
     except KeyError:
         return r500("participants and eventid required. send both.'")
 
-    transactionId = None
-    if user_email.endswith("smail.iitpkd.ac.in"):
-        transactionId="IIT Palakkad Student"
-        
-    eventTableObject = EventTable.objects.create(eventId=event_id,
-                                                 emails=EventTable.serialise_emails(participants), #type: ignore
-                                                 transactionId=transactionId, verified=True)
-    eventTableObject.save()
-    return r200("Event applied")
+    try:
+        transactionId = None
+        # if user_email.endswith("smail.iitpkd.ac.in"):
+        #     transactionId="IIT Palakkad Student"
+            
+        eventTableObject = EventTable.objects.create(eventId=event_id,
+                                                    emails=EventTable.serialise_emails(participants), #type: ignore
+                                                    transactionId=transactionId, verified=True)
+        eventTableObject.save()
+        return r200("Event applied")
+    except Exception as e:
+        return r500("Something went wrong "+str(e))
 
 
-@login_required # limits the calls to this function ig
+# @login_required # limits the calls to this function ig
 @api_view(['POST'])
 def get_event_data(request):
     data=request.data
+    print(data)
     if data is None:
         return r500("invalid form")
     try:
-        event_id = data["eventID"]
+        event_id = data["eventId"]
+        print(data)
     except KeyError:
         return r500("Send an eventID")
     
     event = Event.objects.filter(eventId = event_id).first()
     if event is None:
+        return Response({
+        "name": "Its nothing",
+        "fee": 0,
+    })
         return r500(f"Invalid Event ID = {event_id}")
     return Response({
         "name": event.name,
