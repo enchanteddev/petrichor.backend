@@ -1,3 +1,4 @@
+from django.contrib.sessions.models import Session
 from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -82,13 +83,12 @@ def user_login(request):
         if my_user is not None:
             login(request, my_user)
             profile = Profile.objects.get(email=username)
+            token = (request.session.session_key)
             print("OK")
-            request.session.set_test_cookie()
-            num_visits = request.session.get( 'num_visits', 0)
-            request.session ['num_visits'] = num_visits + 1
             return Response({
                 "ok": True,
                 "username": profile.username,
+                "token": token,
                 "registrations": 0
             })
         print("Failed")
@@ -135,20 +135,20 @@ def getUserInfo(request):
                 })
     else:
         print("Auth failed")
-        return Response({
-            "status":200,
-            "response":{
-                "username":"alonot",
-                "email":"csk1@gmail.com",
-                "phone":"1221211221",
-                "instituteID":"11222",
-                "college":"IIT PKD",
-                "gradyear":2029,
-                "stream":"Science",
-                "events":[{"eventId":"TP00","status":"Payment Verified"},
-                          {"eventId":"WP02","status":"Payment Pending"}]
-            }
-        })
+        # return Response({
+        #     "status":200,
+        #     "response":{
+        #         "username":"alonot",
+        #         "email":"csk1@gmail.com",
+        #         "phone":"1221211221",
+        #         "instituteID":"11222",
+        #         "college":"IIT PKD",
+        #         "gradyear":2029,
+        #         "stream":"Science",
+        #         "events":[{"eventId":"TP00","status":"Payment Verified"},
+        #                   {"eventId":"WP02","status":"Payment Pending"}]
+        #     }
+        # })
         return Response({
             "status":404,
             "response":None
@@ -156,10 +156,16 @@ def getUserInfo(request):
 
 
 def get_user_from_session(request):
-    user = get_user(request)    
-    if user and user.is_authenticated:
+    print(request.data)
+    session = Session.objects.get(session_key=request.data["token"])
+    session_data = session.get_decoded()
+    print(session_data)
+    uid = session_data.get('_auth_user_id')
+    user = User.objects.get(id=uid)
+    if user:
         return user
     else:
+        print(request.session.session_key)
         return None
 
 @api_view(['POST'])
@@ -171,16 +177,14 @@ def whoami(request: Request):
         for eventEntry in eventEntries:
             if str(user) in eventEntry.emails:
                 events.append(eventEntry.eventId)
-    else:
-        events=["TF01"]
     return Response({
-        'user': str(user) if user else "csk1@gmail.com" , # type: ignore
+        'user': str(user) if user else None, # type: ignore
         # 'user': str(user) if user else None , # type: ignore
         'events': events
     })
 
 
-@login_required
+# @login_required
 @api_view(['POST'])
 def apply_event_paid(request: Request):
     data=request.data
@@ -224,17 +228,19 @@ def apply_event_free(request):
         # user=get_user_from_session(request)
         # if user is None:
         #     return r500('login')
-        # user_email = user.username # type: ignore
+        user_email = user.username # type: ignore
+        # user_email="csk1@gmail.com"
         participants = data['participants'] # type: ignore
         event_id = data['eventId'].strip() # type: ignore
 
-    except KeyError:
+    except KeyError as e:
+        print(e)
         return r500("participants and eventid required. send both.'")
 
     try:
-        transactionId = None
-        # if user_email.endswith("smail.iitpkd.ac.in"):
-        #     transactionId="IIT Palakkad Student"
+        transactionId = "pp"
+        if user_email.endswith("smail.iitpkd.ac.in"):
+            transactionId="IIT Palakkad Student"
             
         eventTableObject = EventTable.objects.create(eventId=event_id,
                                                     emails=EventTable.serialise_emails(participants), #type: ignore
@@ -242,6 +248,7 @@ def apply_event_free(request):
         eventTableObject.save()
         return r200("Event applied")
     except Exception as e:
+        print(e)
         return r500("Something went wrong "+str(e))
 
 
