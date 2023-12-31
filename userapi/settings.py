@@ -23,18 +23,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'guq^ch8ob08nf6al1zo(p**!@xeikuv175)2-f@t54nl_m17^1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173'
+    'http://localhost:5173', 'https://petrichor.events'
 ]
 ALLOWED_HOSTS = [
-    'localhost','127.0.0.1'
+    'localhost','127.0.0.1', 'https://petrichor.events'
 ]
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:5173',
+    'http://localhost:5173', 'https://petrichor.events'
 ]
 
 
@@ -171,10 +171,13 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 if not DEBUG:
-    pass
-    print(os.environ['DATABASE_URL'])
-    import dj_database_url
-    db_from_env = dj_database_url.config(conn_max_age=500)
-    DATABASES['default'].update(db_from_env) # type: ignore
-    print(db_from_env)
-    print(DATABASES)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'petDB',
+            'USER': 'petdev',
+            'PASSWORD': 'petdev123',
+            'HOST': 'petdb.cj4uo26wu2o7.eu-north-1.rds.amazonaws.com',
+            'PORT': '5432',
+        }
+    }

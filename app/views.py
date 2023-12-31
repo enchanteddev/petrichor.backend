@@ -177,10 +177,17 @@ def whoami(request: Request):
         for eventEntry in eventEntries:
             if str(user) in eventEntry.emails:
                 events.append(eventEntry.eventId)
+    print({
+        'user': str(user) if user else None, # type: ignore
+        # 'user': str(user) if user else None , # type: ignore
+        'events': events,
+        'email': user.email #type: ignore
+    })
     return Response({
         'user': str(user) if user else None, # type: ignore
         # 'user': str(user) if user else None , # type: ignore
-        'events': events
+        'events': events,
+        'email': str(user) #type: ignore
     })
 
 
@@ -270,11 +277,15 @@ def get_event_data(request):
         return Response({
         "name": "Its nothing",
         "fee": 0,
+        "minMemeber": 0,
+        "maxMemeber": 0
     })
         return r500(f"Invalid Event ID = {event_id}")
     return Response({
         "name": event.name,
         "fee": event.fee,
+        "minMemeber": event.minMember,
+        "maxMemeber": event.maxMember
     })
 
 
