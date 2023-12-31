@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+
+DEBUG = False
+if DEBUG: load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,10 +24,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'guq^ch8ob08nf6al1zo(p**!@xeikuv175)2-f@t54nl_m17^1'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+
 CORS_ORIGIN_ALLOW_ALL = True
 CSRF_COOKIE_SECURE = True
 
@@ -159,10 +163,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'verify.petrichor@gmail.com'
+EMAIL_HOST_USER = os.getenv('MAIL_HOST')
 # EMAIL_HOST_PASSWORD = 'rybdprpmtllwiedg'
-EMAIL_HOST_PASSWORD = 'riipqcznxgnuhbwk'
-EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = os.getenv('MAIL_PWD')
+EMAIL_PORT = os.getenv('MAIL_PORT')
 
 
 SERVER_EMAIL = EMAIL_HOST_USER
@@ -174,10 +178,10 @@ if not DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'petDB',
-            'USER': 'petdev',
-            'PASSWORD': 'petdev123',
-            'HOST': 'petdb.cj4uo26wu2o7.eu-north-1.rds.amazonaws.com',
-            'PORT': '5432',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PWD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT')
         }
     }
