@@ -11,6 +11,7 @@ from resp import r500, r200
 from .models import *
 from userapi import settings
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 def home(request):
@@ -119,10 +120,16 @@ def getUserInfo(request):
                 "username":profileUser.username,
                 "email":profileUser.email,
                 "phone":profileUser.phone,
-                "instituteID":profileUser.instituteID,
                 "gradyear":profileUser.gradYear,
                 "stream":profileUser.stream
-            } 
+            }
+            instituteName=""
+            try:
+                instituteName=Institute.objects.get(pk=profileUser.instituteID)
+            except ObjectDoesNotExist:
+                return r500("Oopss")
+            response["college"]=instituteName
+
             events=[]
             eventEntries=EventTable.objects.all()
             for eventEntry in eventEntries:
