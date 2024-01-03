@@ -116,4 +116,4 @@ def addEvent(request):
     
     except Exception as e:
         print(e)
-        return r500("Something went wrong.")
+        return r500(f'Error: {e}')
