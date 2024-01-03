@@ -97,7 +97,7 @@ def verifyTR(request):
             })
     
 
-api_view(['POST'])
+@api_view(['POST'])
 def addEvent(request):
     try:
         data=request.data
