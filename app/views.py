@@ -165,7 +165,10 @@ def getUserInfo(request):
 
 def get_user_from_session(request):
     print(request.data)
-    session = Session.objects.get(session_key=request.data["token"])
+    try:
+        session = Session.objects.get(session_key=request.data["token"])
+    except:
+        return None
     session_data = session.get_decoded()
     print(session_data)
     uid = session_data.get('_auth_user_id')
@@ -211,25 +214,25 @@ def apply_event_paid(request: Request):
             return r500('login')
         user_email = user.username # type: ignore
         participants = data['participants'] # type: ignore
-        event_id = data['eventID'].strip() # type: ignore
-        transactionId = data['transactionId'].strip() # type: ignore
+        event_id = data['eventId'].strip() # type: ignore
+        transactionId = data['transactionID'].strip() # type: ignore
 
     except KeyError:
+        print(data)
         return r500("participants, eventid and transactionId required. send all.'")
-# try:
-    verified=False
-    if user_email.endswith("smail.iitpkd.ac.in"):
-        verified=True
-        transactionId="IIT Palakkad Student"
-        
-    eventTableObject = EventTable.objects.create(eventId=event_id,
-                                                 emails=EventTable.serialise_emails(participants), #type: ignore
-                                                 transactionId=transactionId,verified=verified)
-    eventTableObject.save()
-    return r200("Event applied")
-    # except Exception:
-    #     print(user_id,event_id,transactionId,verified)
-    #     return r500("Oopsie Doopsie")
+    try:
+        verified=False
+        if user_email.endswith("smail.iitpkd.ac.in"):
+            verified=True
+            transactionId="IIT Palakkad Student"
+            
+        eventTableObject = EventTable.objects.create(eventId=event_id,
+                                                    emails=EventTable.serialise_emails(participants), #type: ignore
+                                                    transactionId=transactionId,verified=verified)
+        eventTableObject.save()
+        return r200("Event applied")
+    except Exception:
+        return r500("Already Applied")
 
 
 # @login_required
@@ -285,15 +288,15 @@ def get_event_data(request):
         return Response({
         "name": "Its nothing",
         "fee": 0,
-        "minMemeber": 0,
-        "maxMemeber": 0
+        "minMember": 0,
+        "maxMember": 0
     })
         return r500(f"Invalid Event ID = {event_id}")
     return Response({
         "name": event.name,
         "fee": event.fee,
-        "minMemeber": event.minMember,
-        "maxMemeber": event.maxMember
+        "minMember": event.minMember,
+        "maxMember": event.maxMember
     })
 
 
