@@ -111,6 +111,7 @@ def user_logout(request):
 
 @api_view(['POST'])
 def getUserInfo(request):
+    print(request.data,"p")
     user = get_user_from_session(request)
     if user:
         print("Passed",user,"p")
@@ -125,7 +126,7 @@ def getUserInfo(request):
             }
             instituteName=""
             try:
-                instituteName=Institute.objects.get(pk=profileUser.instituteID)
+                instituteName=Institute.objects.get(pk=profileUser.instituteID).instiName
             except ObjectDoesNotExist:
                 return r500("Oopss")
             response["college"]=instituteName
