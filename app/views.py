@@ -275,7 +275,7 @@ def get_event_data(request):
     if data is None:
         return r500("invalid form")
     try:
-        event_id = data["eventId"]
+        event_id = data["id"]
         print(data)
     except KeyError:
         return r500("Send an eventID")
