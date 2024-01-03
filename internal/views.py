@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from app.models import *
 from rest_framework.response import Response
-from resp import r500
+from resp import r200, r500
 
 # Create your views here.
 @api_view(['GET'])
@@ -95,3 +95,24 @@ def verifyTR(request):
                 'verified': False,
                 'msg':"Opps!! Unable to complete the request!!!"
             })
+    
+
+api_view(['POST'])
+def addEvent(request):
+    try:
+        data=request.data
+        if data == None:
+            return r500("Please send some info about the event")
+        event = Event.objects.create(
+            eventId=data["id"],
+            name=data["name"],
+            fee=data["fees"],
+            minMember=data["minMember"],
+            maxMember=data["maxMember"]
+        )
+        event.save()
+        return r200("Event saved successfully")
+    
+    except Exception as e:
+        print(e)
+        return r500("Something went wrong.")
