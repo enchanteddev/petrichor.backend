@@ -107,10 +107,11 @@ def addEvent(request):
             eventId=data["id"],
             name=data["name"],
             fee=data["fees"],
-            minMember=data["minMember"],
-            maxMember=data["maxMember"]
+            minMember=data["minMemeber"],
+            maxMember=data["maxMemeber"]
         )
         event.save()
+        print('done')
         return r200("Event saved successfully")
     
     except Exception as e:
