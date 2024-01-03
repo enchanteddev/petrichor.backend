@@ -30,7 +30,7 @@ class Profile(models.Model):
 
 class Event(models.Model):
     eventId=models.CharField(max_length=10,default="", primary_key=True)
-    name=models.CharField(max_length=20,default="")
+    name=models.CharField(max_length=200,default="")
     fee = models.IntegerField(default=0)
     minMember = models.IntegerField(default=1)
     maxMember = models.IntegerField(default=1)
