@@ -288,15 +288,15 @@ def get_event_data(request):
         return Response({
         "name": "Its nothing",
         "fee": 0,
-        "minMember": 0,
-        "maxMember": 0
+        "minMemeber": 0,
+        "maxMemeber": 0
     })
         return r500(f"Invalid Event ID = {event_id}")
     return Response({
         "name": event.name,
         "fee": event.fee,
-        "minMember": event.minMember,
-        "maxMember": event.maxMember
+        "minMemeber": event.minMember,
+        "maxMemeber": event.maxMember
     })
 
 
