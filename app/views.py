@@ -13,6 +13,7 @@ from userapi import settings
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+import json, inspect
 # Create your views here.
 
 def home(request):
@@ -276,8 +277,15 @@ def apply_event_free(request):
         return r200("Event applied")
     except Exception as e:
         print(e)
+        send_error_mail(inspect.stack()[0][3], data, e)
+        
         return r500("Something went wrong "+str(e))
 
+def send_error_mail(name, data, e):
+    send_mail(f'Website Error in: {name}',
+                message= f'Exception: {e}\nData: {json.dumps(data)}',
+                recipient_list=['112201015@smail.iitpkd.ac.in'],
+                from_email=settings.EMAIL_HOST_USER)
 
 # @login_required # limits the calls to this function ig
 @api_view(['POST'])
