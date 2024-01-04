@@ -209,6 +209,8 @@ def whoami(request: Request):
             for eventEntry in eventEntries:
                 if str(user) in eventEntry.emails:
                     events.append(eventEntry.eventId)
+        else:
+            return r500("Invalid Token or No token")
         print({
             'user': str(user) if user else None, # type: ignore
             # 'user': str(user) if user else None , # type: ignore
