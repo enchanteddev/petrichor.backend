@@ -53,13 +53,13 @@ def signup(request):
                     return r500('Email already exists')
                 
                 try:
-
-                    institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
-                    # institute = Institute.objects.get(instiName=instituteID)
-
+                    if insti_type != "neither":
+                        institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
+                        # institute = Institute.objects.get(instiName=instituteID)
+                    else:
+                        institute = Institute.objects.get_or_create(insti_name='NoInsti', institutionType=insti_type)[0]
                     print(institute.pk)
-
-
+                    institute.save()
                     user_profile = Profile.objects.create(username=username, 
                                                         email=email,
                                                         phone=phone,
