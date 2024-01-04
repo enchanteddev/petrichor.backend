@@ -81,7 +81,7 @@ def signup(request):
                 except:
                     send_error_mail(inspect.stack()[0][3], request.data, e)  
                     r500("Something failed")
-                    
+
         except Exception as e:
             send_error_mail(inspect.stack()[0][3], data, e)
             return r500("Something Bad Happened")
@@ -153,6 +153,7 @@ def getUserInfo(request):
                 try:
                     instituteName=Institute.objects.get(pk=profileUser.instituteID).instiName
                 except ObjectDoesNotExist:
+                    # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
                     return r500("Oopss")
                 response["college"]=instituteName
 
@@ -168,20 +169,6 @@ def getUserInfo(request):
                     })
         else:
             print("Auth failed")
-            # return Response({
-            #     "status":200,
-            #     "response":{
-            #         "username":"alonot",
-            #         "email":"csk1@gmail.com",
-            #         "phone":"1221211221",
-            #         "instituteID":"11222",
-            #         "college":"IIT PKD",
-            #         "gradyear":2029,
-            #         "stream":"Science",
-            #         "events":[{"eventId":"TP00","status":"Payment Verified"},
-            #                   {"eventId":"WP02","status":"Payment Pending"}]
-            #     }
-            # })
             return Response({
                 "status":404,
                 "response":None
@@ -196,6 +183,7 @@ def get_user_from_session(request):
         try:
             session = Session.objects.get(session_key=request.data["token"])
         except:
+            # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
             return None
         session_data = session.get_decoded()
         print(session_data)
@@ -256,6 +244,8 @@ def apply_event_paid(request: Request):
 
         except KeyError:
             print(data)
+            send_error_mail(inspect.stack()[0][3], request.data, e) 
+
             return r500("participants, eventid and transactionId required. send all.'")
         try:
             verified=False
@@ -293,6 +283,8 @@ def apply_event_free(request):
 
     except KeyError as e:
         print(e)
+        send_error_mail(inspect.stack()[0][3], request.data, e)  
+
         return r500("participants and eventid required. send both.'")
 
     try:
