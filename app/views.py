@@ -48,7 +48,7 @@ def signup(request):
                     new_user.set_password(pass1)
                     new_user.is_active = True
                     new_user.save()
-                except IntegrityError:
+                except IntegrityError as e:
                     # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
                     return r500('Email already exists')
                 
@@ -74,7 +74,7 @@ def signup(request):
                         'message': "Success",
                         "username": username
                     })
-                except IntegrityError:
+                except IntegrityError as e:
                     # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
 
                     return r500("User already exists. Try something different.")
@@ -152,7 +152,7 @@ def getUserInfo(request):
                 instituteName=""
                 try:
                     instituteName=Institute.objects.get(pk=profileUser.instituteID).instiName
-                except ObjectDoesNotExist:
+                except ObjectDoesNotExist as e:
                     # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
                     return r500("Oopss")
                 response["college"]=instituteName
@@ -182,7 +182,7 @@ def get_user_from_session(request):
         print(request.data)
         try:
             session = Session.objects.get(session_key=request.data["token"])
-        except:
+        except Exception as e:
             # send_error_mail(inspect.stack()[0][3], request.data, e)  # Leave this commented otherwise every wrong login will send an error mail
             return None
         session_data = session.get_decoded()
@@ -258,7 +258,7 @@ def apply_event_paid(request: Request):
                                                         transactionId=transactionId,verified=verified)
             eventTableObject.save()
             return r200("Event applied")
-        except Exception:
+        except Exception  as e:
             return r500("Already Applied")
     except Exception as e:
             send_error_mail(inspect.stack()[0][3], request.data, e)
@@ -320,7 +320,7 @@ def get_event_data(request):
         try:
             event_id = data["id"]
             print(data)
-        except KeyError:
+        except KeyError as e:
             return r500("Send an eventID")
         
         event = Event.objects.filter(eventId = event_id).first()
