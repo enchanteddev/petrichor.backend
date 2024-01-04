@@ -327,12 +327,6 @@ def get_event_data(request):
         
         event = Event.objects.filter(eventId = event_id).first()
         if event is None:
-            return Response({
-            "name": "Its nothing",
-            "fee": 0,
-            "minMemeber": 0,
-            "maxMemeber": 0
-        })
             return r500(f"Invalid Event ID = {event_id}")
         return Response({
             "name": event.name,
