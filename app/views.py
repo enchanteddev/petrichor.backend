@@ -57,7 +57,7 @@ def signup(request):
                         institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
                         # institute = Institute.objects.get(instiName=instituteID)
                     else:
-                        institute = Institute.objects.get_or_create(insti_name='NoInsti', institutionType=insti_type)[0]
+                        institute = Institute.objects.get_or_create(instiName='NoInsti', institutionType=insti_type)[0]
                     print(institute.pk)
                     institute.save()
                     user_profile = Profile.objects.create(username=username, 
