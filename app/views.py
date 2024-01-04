@@ -11,6 +11,7 @@ from resp import r500, r200
 from .models import *
 from userapi import settings
 from django.core.mail import send_mail
+from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
@@ -40,32 +41,40 @@ def signup(request):
 
 
         else:
-            new_user = User(username=email)
-            new_user.set_password(pass1)
-            new_user.is_active = True
-            new_user.save()
+            try:
+                new_user = User(username=email)
+                new_user.set_password(pass1)
+                new_user.is_active = True
+                new_user.save()
+            except IntegrityError:
+                return r500('Email already exists')
             
+            try:
 
-            institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
-            # institute = Institute.objects.get(instiName=instituteID)
+                institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
+                # institute = Institute.objects.get(instiName=instituteID)
 
-            print(institute.pk)
+                print(institute.pk)
 
 
-            user_profile = Profile.objects.create(username=username, 
-                                                  email=email,
-                                                  phone=phone,
-                                                  instituteID=institute.pk,
-                                                  gradYear=gradyear,
-                                                  stream=stream)
-            user_profile.save()
+                user_profile = Profile.objects.create(username=username, 
+                                                    email=email,
+                                                    phone=phone,
+                                                    instituteID=institute.pk,
+                                                    gradYear=gradyear,
+                                                    stream=stream)
+                user_profile.save()
 
-            return Response({
-                'status': 200,
-                "registered": True,
-                'message': "Success",
-                "username": username
-            })
+                return Response({
+                    'status': 200,
+                    "registered": True,
+                    'message': "Success",
+                    "username": username
+                })
+            except IntegrityError:
+                return r500("User already exists. Try something different.")
+            except:
+                r500("Something failed")
 
 
 @api_view(['POST'])
