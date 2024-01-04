@@ -83,7 +83,7 @@ def signup(request):
                     r500("Something failed")
 
         except Exception as e:
-            send_error_mail(inspect.stack()[0][3], data, e)
+            send_error_mail(inspect.stack()[0][3], request.data, e)
             return r500("Something Bad Happened")
 
 
@@ -118,7 +118,7 @@ def user_login(request):
                 "logged-in": "false"
             })
         except Exception as e:
-            send_error_mail(inspect.stack()[0][3], data, e)
+            send_error_mail(inspect.stack()[0][3], request.data, e)
             return r500("Something Bad Happened")
         
 
@@ -261,7 +261,7 @@ def apply_event_paid(request: Request):
         except Exception  as e:
             return r500("Already Applied")
     except Exception as e:
-            send_error_mail(inspect.stack()[0][3], data, e)
+            send_error_mail(inspect.stack()[0][3], request.data, e)
             return r500("Something Bad Happened")
     
 
@@ -339,7 +339,7 @@ def get_event_data(request):
             "maxMemeber": event.maxMember
         })
     except Exception as e:
-            send_error_mail(inspect.stack()[0][3], data, e)
+            send_error_mail(inspect.stack()[0][3], request.data, e)
             return r500("Something Bad Happened")
 
 
@@ -367,7 +367,7 @@ def send_grievance(request: Request):
             })
 
     except Exception as e:
-        send_error_mail(inspect.stack()[0][3], data, e)
+        send_error_mail(inspect.stack()[0][3], request.data, e)
         return Response({
                 'status':400,
                 'success': False
