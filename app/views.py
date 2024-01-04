@@ -243,9 +243,9 @@ def apply_event_free(request):
     if data is None:
         return r500("invalid form")
     try:
-        # user=get_user_from_session(request)
-        # if user is None:
-        #     return r500('login')
+        user=get_user_from_session(request)
+        if user is None:
+            return r500('login')
         user_email = user.username # type: ignore
         # user_email="csk1@gmail.com"
         participants = data['participants'] # type: ignore
