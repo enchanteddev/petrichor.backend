@@ -42,6 +42,7 @@ class EventTable(models.Model):
     emails = models.TextField(default="")
     transactionId=models.CharField(max_length=25, primary_key=True)
     verified=models.BooleanField()
+    CACode=models.CharField(max_length=10, null=True)
 
     @staticmethod
     def serialise_emails(emails: list[str]):

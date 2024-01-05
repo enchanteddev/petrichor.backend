@@ -13,7 +13,7 @@ from userapi import settings
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-import json, inspect
+import json, inspect, time
 # Create your views here.
 
 def home(request):
@@ -243,6 +243,7 @@ def apply_event_paid(request: Request):
             participants = data['participants'] # type: ignore
             event_id = data['eventId'].strip() # type: ignore
             transactionId = data['transactionID'].strip() # type: ignore
+            CAcode = data['CACode'].strip() # type: ignore
 
         except KeyError as e:
             print(data)
@@ -257,7 +258,8 @@ def apply_event_paid(request: Request):
                 
             eventTableObject = EventTable.objects.create(eventId=event_id,
                                                         emails=EventTable.serialise_emails(participants), #type: ignore
-                                                        transactionId=transactionId,verified=verified)
+                                                        transactionId=transactionId,verified=verified,
+                                                        CACode=CAcode)
             eventTableObject.save()
             return r200("Event applied")
         except Exception  as e:
@@ -282,6 +284,7 @@ def apply_event_free(request):
         # user_email="csk1@gmail.com"
         participants = data['participants'] # type: ignore
         event_id = data['eventId'].strip() # type: ignore
+        CAcode = data['CACode'].strip() # type: ignore
 
     except KeyError as e:
         print(e)
@@ -290,13 +293,14 @@ def apply_event_free(request):
         return r500("participants and eventid required. send both.'")
 
     try:
-        transactionId = "pp"
+        transactionId = f"{user_email}+free+{time.time()}"
         if user_email.endswith("smail.iitpkd.ac.in"):
-            transactionId="IIT Palakkad Student"
+            transactionId=f"IIT Palakkad Student+{time.time()}"
             
         eventTableObject = EventTable.objects.create(eventId=event_id,
                                                     emails=EventTable.serialise_emails(participants), #type: ignore
-                                                    transactionId=transactionId, verified=True)
+                                                    transactionId=transactionId, verified=True,
+                                                    CACode=CAcode)
         eventTableObject.save()
         return r200("Event applied")
     except Exception as e:
