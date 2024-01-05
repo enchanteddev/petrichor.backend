@@ -13,7 +13,7 @@ from userapi import settings
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-import json, inspect
+import json, inspect, time
 # Create your views here.
 
 def home(request):
@@ -53,13 +53,13 @@ def signup(request):
                     return r500('Email already exists')
                 
                 try:
-
-                    institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
-                    # institute = Institute.objects.get(instiName=instituteID)
-
+                    if insti_type != "neither":
+                        institute = Institute.objects.get_or_create(instiName=insti_name, institutionType=insti_type)[0]
+                        # institute = Institute.objects.get(instiName=instituteID)
+                    else:
+                        institute = Institute.objects.get_or_create(instiName='NoInsti', institutionType=insti_type)[0]
                     print(institute.pk)
-
-
+                    institute.save()
                     user_profile = Profile.objects.create(username=username, 
                                                         email=email,
                                                         phone=phone,
@@ -209,6 +209,8 @@ def whoami(request: Request):
             for eventEntry in eventEntries:
                 if str(user) in eventEntry.emails:
                     events.append(eventEntry.eventId)
+        else:
+            return r500("Invalid Token or No token")
         print({
             'user': str(user) if user else None, # type: ignore
             # 'user': str(user) if user else None , # type: ignore
@@ -241,6 +243,7 @@ def apply_event_paid(request: Request):
             participants = data['participants'] # type: ignore
             event_id = data['eventId'].strip() # type: ignore
             transactionId = data['transactionID'].strip() # type: ignore
+            CAcode = data['CAcode'].strip() # type: ignore
 
         except KeyError as e:
             print(data)
@@ -255,7 +258,8 @@ def apply_event_paid(request: Request):
                 
             eventTableObject = EventTable.objects.create(eventId=event_id,
                                                         emails=EventTable.serialise_emails(participants), #type: ignore
-                                                        transactionId=transactionId,verified=verified)
+                                                        transactionId=transactionId,verified=verified,
+                                                        CACode=CAcode)
             eventTableObject.save()
             return r200("Event applied")
         except Exception  as e:
@@ -280,6 +284,7 @@ def apply_event_free(request):
         # user_email="csk1@gmail.com"
         participants = data['participants'] # type: ignore
         event_id = data['eventId'].strip() # type: ignore
+        # CAcode = data['CAcode'].strip() # type: ignore
 
     except KeyError as e:
         print(e)
@@ -288,9 +293,9 @@ def apply_event_free(request):
         return r500("participants and eventid required. send both.'")
 
     try:
-        transactionId = "pp"
+        transactionId = f"{user_email}+free+{time.time()}"
         if user_email.endswith("smail.iitpkd.ac.in"):
-            transactionId="IIT Palakkad Student"
+            transactionId=f"IIT Palakkad Student+{time.time()}"
             
         eventTableObject = EventTable.objects.create(eventId=event_id,
                                                     emails=EventTable.serialise_emails(participants), #type: ignore
@@ -327,12 +332,6 @@ def get_event_data(request):
         
         event = Event.objects.filter(eventId = event_id).first()
         if event is None:
-            return Response({
-            "name": "Its nothing",
-            "fee": 0,
-            "minMemeber": 0,
-            "maxMemeber": 0
-        })
             return r500(f"Invalid Event ID = {event_id}")
         return Response({
             "name": event.name,
