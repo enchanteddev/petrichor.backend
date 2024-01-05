@@ -99,7 +99,7 @@ def user_login(request):
             username = data['username'].strip()
             print(username)
             password = data['password']
-            print(password)
+            # print(password)
             my_user = authenticate(username = username, password = password)
             if my_user is not None:
                 login(request, my_user)
@@ -304,6 +304,8 @@ def apply_event_free(request):
         return r500("Something went wrong "+str(e))
 
 def send_error_mail(name, data, e):
+    if data["password"]:
+        data["password"]=""
     send_mail(f'Website Error in: {name}',
                 message= f'Exception: {e}\nData: {json.dumps(data)}',
                 recipient_list=['112201015@smail.iitpkd.ac.in','112201020@smail.iitpkd.ac.in'],
