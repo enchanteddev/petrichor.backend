@@ -284,7 +284,7 @@ def apply_event_free(request):
         # user_email="csk1@gmail.com"
         participants = data['participants'] # type: ignore
         event_id = data['eventId'].strip() # type: ignore
-        CAcode = data['CACode'].strip() # type: ignore
+        CAcode = data['CAcode'].strip() # type: ignore
 
     except KeyError as e:
         print(e)
