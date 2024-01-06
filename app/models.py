@@ -16,12 +16,12 @@ class Profile(models.Model):
     # objects = None
 
     # userId=models.IntegerField()
-    username = models.CharField(max_length=100)
+    username = models.TextField()
     email = models.EmailField(primary_key=True)
-    phone = models.CharField(max_length=13)
+    phone = models.CharField(max_length=25)
     instituteID = models.CharField(null=True, max_length=255)
     gradYear = models.IntegerField(default=6969)
-    stream = models.CharField(null=True, max_length=10)
+    stream = models.TextField(null=True)
 
 
     def __str__(self):
@@ -40,7 +40,7 @@ sep = '\n'
 class EventTable(models.Model):
     eventId=models.CharField(max_length=10,null=True)
     emails = models.TextField(default="")
-    transactionId=models.CharField(max_length=25, primary_key=True)
+    transactionId=models.TextField(primary_key=True)
     verified=models.BooleanField()
     CACode=models.CharField(max_length=10, null=True)
 
