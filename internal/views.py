@@ -1,6 +1,8 @@
+import inspect
 from rest_framework.decorators import api_view
 from app.models import *
 from rest_framework.response import Response
+from app.views import send_error_mail
 from resp import r200, r500
 
 # Create your views here.
@@ -116,4 +118,38 @@ def addEvent(request):
     
     except Exception as e:
         print(e)
+        return r500(f'Error: {e}')
+    
+
+@api_view(["POST"])
+def updateEvent(request):
+    try:
+        data=request.data
+        if data:
+            dt_eventId=data['eventId']
+            if dt_eventId is not None:
+                return r500('Please provide an eventId')
+            dt_name=data['name']
+            dt_fee=data['fee']
+            dt_minMember=data['minMember']
+            dt_maxMember=data['maxMember']
+
+            event= Event.objects.get(eventId=dt_eventId)
+            print(event.name,event.fee,dt_fee)
+            if dt_name is not None:
+                event.name=dt_name
+            if dt_fee is not None:
+                event.fee=dt_fee
+            if dt_minMember is not None:
+                event.minMember=dt_minMember
+            if dt_maxMember is not None:
+                event.maxMember=dt_maxMember
+            
+            event.save()
+
+            return r200("Event Updated")
+
+    except Exception as e:
+        print(e)
+        # send_error_mail(inspect.stack()[0][3], request.data, e)
         return r500(f'Error: {e}')
