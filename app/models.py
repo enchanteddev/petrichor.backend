@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from rest_framework.response import Response
 
 # Create your models here.
 User=get_user_model()
@@ -43,6 +44,16 @@ class EventTable(models.Model):
     transactionId=models.TextField(primary_key=True)
     verified=models.BooleanField()
     CACode=models.CharField(max_length=10, null=True)
+
+    def cult_checker(self):
+        email_ls = self.emails.split(sep)
+        unregistered_ls =  [email for email in email_ls[1:] if not Profile.objects.filter(email=email).exists()]
+        if len(unregistered_ls):
+            return False
+        return Response({
+                'status':200,
+                'unregistered_emails': unregistered_ls
+            })
 
     @staticmethod
     def serialise_emails(emails: list[str]):
