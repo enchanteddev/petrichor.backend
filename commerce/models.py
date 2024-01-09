@@ -10,9 +10,22 @@ class Item(models.Model):
     def __str__(self) -> str:
         return self.name
 
+"""
+ID structure:
+first letter: M - Merch
+              A - Accom
+              X - Xtras
+
+second letter: T - Tshirt
+(for merch)    H - Hoodie
+               Z - Zippie
+               C - Cap
+               
+a number at the end starting from 0, increases in digits if req.
+"""
 class PaymentTable(models.Model):
     transactionId=models.TextField()
-    itemId=models.CharField(null=True,max_length=10)
+    itemId=models.CharField(max_length=10) # WHY WAS IT NULL = TRUE !?
     userId=models.EmailField()
     verified=models.BooleanField(default=False)
 
@@ -22,7 +35,7 @@ class PaymentTable(models.Model):
 class Address(models.Model):
     userId=models.EmailField()
     address=models.TextField()
-    pincode=models.IntegerField(default=0)
+    pincode=models.IntegerField(default=-1)
 
     def __str__(self) -> str:
         return self.address+"\n"+str(self.pincode)
