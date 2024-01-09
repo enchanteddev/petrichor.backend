@@ -80,7 +80,7 @@ def signup(request):
                     return r500("User already exists. Try something different.")
                 except Exception as e:
                     send_error_mail(inspect.stack()[0][3], request.data, e)  
-                    r500("Something failed")
+                    return r500("Something failed")
 
         except Exception as e:
             send_error_mail(inspect.stack()[0][3], request.data, e)
