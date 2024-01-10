@@ -261,11 +261,12 @@ def apply_event_paid(request: Request):
                                                         transactionId=transactionId,verified=verified,
                                                         CACode=CAcode)
 
-            val = EventTable.cult_checker(eventTableObject)
-            if not val:
-                eventTableObject.save()
-            else:
-                return val
+            # Uncomment when frontend is done
+            # val = EventTable.cult_checker(eventTableObject)
+            # if not val:
+            #     eventTableObject.save()
+            # else:
+            #     return val
 
 
             eventTableObject.save()
@@ -308,12 +309,12 @@ def apply_event_free(request):
         eventTableObject = EventTable.objects.create(eventId=event_id,
                                                     emails=EventTable.serialise_emails(participants), #type: ignore
                                                     transactionId=transactionId, verified=True)
-
-        val = EventTable.cult_checker(eventTableObject)
-        if not val:
-            eventTableObject.save()
-        else:
-            return val
+        # Uncomment when frontend catches up
+        # val = EventTable.cult_checker(eventTableObject)
+        # if not val:
+        #     eventTableObject.save()
+        # else:
+        #     return val
 
         eventTableObject.save()
         return r200("Event applied")
