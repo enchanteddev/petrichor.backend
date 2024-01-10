@@ -1,10 +1,18 @@
 import inspect
+import json
+import sys
+
+from django.http import JsonResponse
+
+sys.path.append('/updatepetrichor/petrichor.backend/app') # CHANGE REQUIRED!
+# from updatepetrichor.petrichor.backend.app.models import *
+
+
 from rest_framework.decorators import api_view
 from app.models import *
 from rest_framework.response import Response
-from app.views import send_error_mail
+# from app.views import send_error_mail
 from resp import r200, r500
-
 # Create your views here.
 @api_view(['GET'])
 def getUnconfirmed(request):
@@ -20,10 +28,10 @@ def getUnconfirmed(request):
             for event in events:
                 if not event.verified:
                     event_dict[Event.objects.get(eventId=event.eventId).name]=event.transactionId
-            
+
             user_name=Profile.objects.get(userId=user_id).username
             unconfirmed_list.append({user_name:event_dict})
-        
+
         return Response(
             {
                 "data":unconfirmed_list
@@ -31,7 +39,7 @@ def getUnconfirmed(request):
         )
     except Exception as e:
         return r500("Oopsie Doopsie")
-    
+
 @api_view(['GET'])
 def getEventUsers(request):
     if request.method == "GET":
@@ -62,14 +70,14 @@ def getEventUsers(request):
             })
         except Exception as e:
             return r500("Opps!! Unable to complete the request!!!")
-    
+
 
 @api_view(['POST'])
 def verifyTR(request):
     try:
         if request.data == None:
             return r500("Invalid Form")
-        
+
         data=request.data
         print("print:",data)
 
@@ -97,7 +105,7 @@ def verifyTR(request):
                 'verified': False,
                 'msg':"Opps!! Unable to complete the request!!!"
             })
-    
+
 
 @api_view(['POST'])
 def addEvent(request):
@@ -115,11 +123,11 @@ def addEvent(request):
         event.save()
         print('done')
         return r200("Event saved successfully")
-    
+
     except Exception as e:
         print(e)
         return r500(f'Error: {e}')
-    
+
 
 @api_view(["POST"])
 def updateEvent(request):
@@ -144,7 +152,7 @@ def updateEvent(request):
                 event.minMember=dt_minMember
             if dt_maxMember is not None:
                 event.maxMember=dt_maxMember
-            
+
             event.save()
 
             return r200("Event Updated")
@@ -153,3 +161,7 @@ def updateEvent(request):
         print(e)
         # send_error_mail(inspect.stack()[0][3], request.data, e)
         return r500(f'Error: {e}')
+
+
+
+

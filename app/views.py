@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request, Empty
@@ -388,3 +388,38 @@ def send_grievance(request: Request):
                 'status':400,
                 'success': False
             })
+
+@api_view(['POST'])
+def display_sheet(request):
+    data = request.data
+    eventID = data['id'] if data != None else None
+    if eventID:
+        teamlst = EventTable.objects.filter(eventId=eventID)
+        teamdict = {}  # info of each team
+        participants = []  # participants to be added
+
+        for i, team in enumerate(teamlst):
+            partis = list(team.emails.split("\n"))
+            teamdict['team'] = f"Team{i + 1}"
+            teamdict["details"] = []
+            for part in partis:
+                prof = Profile.objects.get(email=part)
+                detail = {
+                    "name": f"{prof.username}",
+                    "email": f"{part}",
+                    "phone": f"{prof.phone}",
+                    "CA": f"{team.CACode}"
+                }
+                teamdict["details"].append(detail)
+
+            participants.append(teamdict)
+
+        event = {
+            "name": f"{Event.objects.get(eventId=eventID).name}",
+            "participants": participants
+        }
+
+        response = json.dumps(event)
+        print(type(Response(event)))
+
+        return Response(event)
