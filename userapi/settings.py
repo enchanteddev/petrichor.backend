@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-DEBUG = False
-if DEBUG: 
+DEBUG = False # changed
+if DEBUG:
     from dotenv import load_dotenv
     load_dotenv()
 
@@ -25,7 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+
+SECRET_KEY = os.getenv('SECRET_KEY') ## CHANGED
+# SECRET_KEY = 'allah-hu-akbar'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -54,7 +56,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'app',
-    'corsheaders'
+    'corsheaders',
+    'internal', # changed
 ]
 
 MIDDLEWARE = [
@@ -173,7 +176,7 @@ EMAIL_PORT = os.getenv('MAIL_PORT')
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
+#CHANGED!
 
 DATABASES = {
     'default': {
