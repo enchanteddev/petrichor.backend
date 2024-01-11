@@ -52,7 +52,7 @@ class EventTable(models.Model):
             return False
         return Response({
                 'status':401,
-                'message': 'some emails are not registered,
+                'message': 'some emails are not registered',
                 'unregistered_emails': unregistered_ls
             })
 
