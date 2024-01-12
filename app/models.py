@@ -24,6 +24,8 @@ class Profile(models.Model):
     gradYear = models.IntegerField(default=6969)
     stream = models.TextField(null=True)
 
+    eventsRegistered = models.TextField(null=True, default="")
+
 
     def __str__(self):
         return self.username

@@ -133,6 +133,8 @@ def user_logout(request):
     )
     # return redirect('login')
 
+
+# should return the eventsRegistered string!
 @api_view(['POST'])
 def getUserInfo(request):
     try:
@@ -263,7 +265,6 @@ def apply_event_paid(request: Request):
                                                         emails=EventTable.serialise_emails(participants), #type: ignore
                                                         transactionId=transactionId,verified=verified,
                                                         CACode=CAcode)
-
             # Uncomment when frontend is done
             val = EventTable.cult_checker(eventTableObject)
             if not val:
@@ -271,6 +272,9 @@ def apply_event_paid(request: Request):
             else:
                 return val
 
+            for email in eventTableObject.emails.split("\n"):
+                prof = Profile.objects.get(email=email)
+                prof.eventsRegistered += f"{event_id}"
 
             eventTableObject.save()
             return r200("Event applied")
@@ -319,6 +323,10 @@ def apply_event_free(request):
             eventTableObject.save()
         else:
             return val
+
+        for email in eventTableObject.emails.split("\n"):
+            prof = Profile.objects.get(email=email)
+            prof.eventsRegistered += f"{event_id}"
 
         eventTableObject.save()
         return r200("Event applied")
