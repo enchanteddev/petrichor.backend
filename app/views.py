@@ -161,7 +161,7 @@ def getUserInfo(request):
                 events=[]
                 eventEntries=EventTable.objects.all()
                 for eventEntry in eventEntries:
-                    if str(user) in eventEntry.emails:
+                    if str(user) in eventEntry.get_emails():
                         events.append({"eventId":eventEntry.eventId,"status":eventEntry.verified})
                 response["events"]=events
                 return Response({
