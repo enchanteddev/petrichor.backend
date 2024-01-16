@@ -1,7 +1,7 @@
 import inspect
 from django.shortcuts import render
 
-from app.views import send_error_mail
+from app.views import get_user_from_session, send_error_mail
 from .models import *
 from django.http import HttpResponse
 from rest_framework.response import Response
@@ -29,14 +29,15 @@ def upsertItem(request):
         price = data["price"]
         size = data["size"]
 
-        item = Item.objects.filter(itemId=itemId).first()
-        if item:
+        try:
+            item = Item.objects.get(itemId=itemId)
             # REVIEW: ALERT, prev code would only change one entry at a time, was this intended? 
+            # RESPONSE: No 
             item.name = name or item.name
             item.itemId = itemId or item.itemId
             item.price = price or item.price
             item.size = size or item.size
-        else:
+        except Item.DoesNotExist as e:
             item = Item.objects.create(name=name, itemId=itemId, price=price, size=size)
         item.save()
         return r200("Item upserted!")
@@ -46,32 +47,37 @@ def upsertItem(request):
         print(e)
         return r500("Please send all the details")
     except Exception as e:
-        send_error_mail(inspect.stack()[0][3], request.data, e)
+        # send_error_mail(inspect.stack()[0][3], request.data, e)
         print(e)
         return r500("Something failed")
 
 
 @api_view(["POST"])
-def addAddress(request):
+def upsertAddress(request):
     """
-    ### adds new address for a user
+    ### adds or updates new address for a user \n Requires token
     """
     data = request.data
     if data:
         try:
-            userId = data["userId"]
-            address = data["address"]
-            pinCode = data["pinCode"]
+            user=get_user_from_session(request)
+            if user is None:
+                return r500("User Not Found")
+            userId=user.username
+            dt_address = data["address"]
+            dt_pinCode = data["pincode"]
 
-            if Address.objects.filter(address=address, userId=userId).first():
-                return r500("Already added")
-
-            address = Address.objects.create(
-                userId=userId, address=address, pincode=pinCode
-            )
+            try:
+                address= Address.objects.get(userId=userId)
+                address.address=dt_address or address.address
+                address.pincode=dt_pinCode or address.pincode
+            except Address.DoesNotExist as e:
+                address = Address.objects.create(
+                    userId=userId, address=dt_address, pincode=dt_pinCode)
+                
             address.save()
 
-            return r200("address added")
+            return r200("address upserted")
 
         except KeyError as e:
             # send_error_mail(inspect.stack()[0][3], request.data, e)
@@ -88,16 +94,20 @@ def addAddress(request):
 @api_view(["POST"])
 def hasAddress(request):
     """
-    ### To get whether a user has atleast 1 address or not.
+    ### To get whether a user has atleast 1 address or not. \n Requires token
     """
     data = request.data
     if data:
         try:
-            userId = data["userId"]
+            user=get_user_from_session(request)
+            if user is None:
+                return r500("User Not Found")
+            userId=user.username
 
-            if Address.objects.filter(userId=userId).first():
-                return Response({"status": 200, "hasaddress": True})
-            else:
+            try:
+                address=Address.objects.get(userId=userId)
+                return Response({"status": 200, "hasaddress": True, "address": address.address , "pincode":address.pincode})
+            except Address.DoesNotExist as e:
                 return Response({"status": 200, "hasaddress": False})
 
         except KeyError as e:
@@ -115,21 +125,21 @@ def hasAddress(request):
 @api_view(["POST"])
 def getAddress(request):
     """
-    ### Call this to get all the addresses associated with a userId(email)
+    ### Call this to get all the addresses associated with a userId(email). \n Requires token
     """
     data = request.data
     if data:
         try:
-            userId = data["userId"]
-            allAddresses = []
-
-            db_adressess = Address.objects.filter(userId=userId).values()
-            for address in db_adressess:
-                allAddresses.append(
-                    {"address": address["address"], "pinCode": address["pincode"]}
-                )
-
-            return Response({"status": 200, "addresses": allAddresses})
+            user=get_user_from_session(request)
+            if user is None:
+                return r500("User Not Found")
+            userId=user.username
+            try:
+                db_adressess = Address.objects.get(userId=userId)
+                return Response({"status": 200, "address": db_adressess.address , "pinCode": db_adressess.pincode })
+            except Address.DoesNotExist as e:
+                print(e)
+                return r500("This user does not have any address associated with it.")
 
         except KeyError as e:
             # send_error_mail(inspect.stack()[0][3], request.data, e)
@@ -146,18 +156,28 @@ def getAddress(request):
 @api_view(["POST"])
 def makeTransaction(request):
     """
-    #### Adds a new entry to the payment table.
+    #### Adds a new entry to the payment table. \n Requires token
     """
     data = request.data
     if data:
         try:
             tr_Id = data["transactionId"]
             itemId = data["itemId"]
-            userId = data["userId"]
+            user=get_user_from_session(request)
+            if user is None:
+                return r500("User Not Found")
+            userId=user.username
 
-            if PaymentTable.objects.filter(transactionId=tr_Id).first():
+            try:
+                Item.objects.get(itemId=itemId)
+            except Item.DoesNotExist as e:
+                return r500("Item not found. Please recheck the given Id")
+
+            try:
+                PaymentTable.objects.get(transactionId=tr_Id)
                 return r500("transaction already made")
-            else:
+            except PaymentTable.DoesNotExist as e:
+            
                 verified = False
                 if userId.endswith("@smail.iitpkd.ac.in"):
                     verified = True
@@ -166,7 +186,7 @@ def makeTransaction(request):
                 )
                 payment.save()
 
-            return r200("payment saved")
+                return r200("payment saved")
 
         except KeyError as e:
             # send_error_mail(inspect.stack()[0][3], request.data, e)
@@ -190,6 +210,10 @@ def filterTransaction(request):
         try:
             itemId = data["itemId"]
             allTrs = []
+            try:
+                Item.objects.get(itemId=itemId)
+            except Item.DoesNotExist as e:
+                return r500("Item not found. Please recheck the given Id")
 
             trs = PaymentTable.objects.filter(itemId=itemId).values()
             for tr in trs:

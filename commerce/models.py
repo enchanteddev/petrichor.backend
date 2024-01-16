@@ -24,8 +24,8 @@ second letter: T - Tshirt
 a number at the end starting from 0, increases in digits if req.
 """
 class PaymentTable(models.Model):
-    transactionId=models.TextField()
-    itemId=models.CharField(max_length=10) # WHY WAS IT NULL = TRUE !?
+    transactionId=models.TextField(primary_key=True)
+    itemId=models.CharField(max_length=10,default="") # WHY WAS IT NULL = TRUE !?
     userId=models.EmailField()
     verified=models.BooleanField(default=False)
 
@@ -33,7 +33,7 @@ class PaymentTable(models.Model):
         return self.userId+":\t"+self.itemId
 
 class Address(models.Model):
-    userId=models.EmailField()
+    userId=models.EmailField(primary_key=True)
     address=models.TextField()
     pincode=models.IntegerField(default=-1)
 
