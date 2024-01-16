@@ -254,7 +254,7 @@ def apply_event_paid(request: Request):
             verified=False
             if user_email.endswith("smail.iitpkd.ac.in"):
                 verified=True
-                transactionId="IIT Palakkad Student"
+                transactionId=f"IIT Palakkad Student+{time.time()}"
             
             if EventTable.objects.filter(transactionId = transactionId).first():
                 return r500("Same Transaction ID has been used to apply for another event.")
@@ -265,11 +265,11 @@ def apply_event_paid(request: Request):
                                                         CACode=CAcode)
 
             # Uncomment when frontend is done
-            val = EventTable.cult_checker(eventTableObject)
-            if not val:
-                eventTableObject.save()
-            else:
-                return val
+            # val = EventTable.cult_checker(eventTableObject)
+            # if not val:
+            #     eventTableObject.save()
+            # else:
+            #     return val
 
 
             eventTableObject.save()
@@ -314,11 +314,11 @@ def apply_event_free(request):
                                                     emails=EventTable.serialise_emails(participants), #type: ignore
                                                     transactionId=transactionId, verified=True)
         # Uncomment when frontend catches up
-        val = EventTable.cult_checker(eventTableObject)
-        if not val:
-            eventTableObject.save()
-        else:
-            return val
+        # val = EventTable.cult_checker(eventTableObject)
+        # if not val:
+        #     eventTableObject.save()
+        # else:
+        #     return val
 
         eventTableObject.save()
         return r200("Event applied")
