@@ -234,7 +234,7 @@ def display_sheet(request):
     if eventID:
         return getDataFromID(eventID)
 
-@lru_cache()
+# @lru_cache()
 def getDataFromID(eventID):
     teamlst = EventTable.objects.filter(eventId=eventID)
     teamdict = {}  # info of each team
@@ -246,7 +246,8 @@ def getDataFromID(eventID):
         teamdict["details"] = []
         for part in partis:
             try:
-                prof = Profile.objects.get(email=part)
+                # prof = Profile.objects.get(email=part)
+                prof = get_profile_from_email(part)
                 detail = {
                         "name": f"{prof.username}",
                         "email": f"{part}",
@@ -271,8 +272,5 @@ def getDataFromID(eventID):
             "name": f"{get_event_from_id(eventID).name}",
             "participants": participants
         }
-
-    response = json.dumps(event)
-    print(type(Response(event)))
 
     return Response(event)
